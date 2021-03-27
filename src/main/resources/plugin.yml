@@ -1,0 +1,10 @@
+name: RegionResourcePacks
+version: ${project.version}
+main: io.github.seanlego23.regionresourcepacks.RegionResourcePacks
+api-version: 1.16
+depend: [ WorldGuard, WorldEdit ]
+authors: [ seanlego23 ]
+permissions:
+   regionresourcepacks.change:
+      default: op
+      description: Allows a player to change the resource pack in a region
