@@ -28,7 +28,6 @@ public class RegionListener implements Listener {
     public RegionListener(RegionResourcePacks plugin) {
         this.plugin = plugin;
 
-        boolean globalNotFound = false;
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
         for (org.bukkit.World bukkitWorld : Bukkit.getWorlds()) {
             World world = new BukkitWorld(bukkitWorld);
@@ -41,13 +40,9 @@ public class RegionListener implements Listener {
                 if (global == null) {
                     plugin.getLogger().info("__global__ region was not found for " + bukkitWorld.getName() +
                             " world.");
-                    globalNotFound = true;
                 }
             }
         }
-        if (globalNotFound)
-            plugin.getLogger().info("The __global__ region in each world is not necessary. If needed, see the" +
-                    " ReadMe file on github.");
     }
 
     @EventHandler
