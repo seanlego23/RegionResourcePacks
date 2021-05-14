@@ -8,6 +8,8 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,11 +19,35 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 
+import java.util.ArrayList;
+
 public class RegionListener implements Listener {
     private final RegionResourcePacks plugin;
+    boolean serverResourcePackFail = false;
 
     public RegionListener(RegionResourcePacks plugin) {
         this.plugin = plugin;
+
+        boolean globalNotFound = false;
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        for (org.bukkit.World bukkitWorld : Bukkit.getWorlds()) {
+            World world = new BukkitWorld(bukkitWorld);
+            RegionManager manager = container.get(world);
+            if (manager == null) {
+                plugin.getLogger().warning("WorldGuard RegionManager not found for " + bukkitWorld.getName() +
+                        " world.");
+            } else {
+                ProtectedRegion global = manager.getRegion("__global__");
+                if (global == null) {
+                    plugin.getLogger().info("__global__ region was not found for " + bukkitWorld.getName() +
+                            " world.");
+                    globalNotFound = true;
+                }
+            }
+        }
+        if (globalNotFound)
+            plugin.getLogger().info("The __global__ region in each world is not necessary. If needed, see the" +
+                    " ReadMe file on github.");
     }
 
     @EventHandler
@@ -50,8 +76,17 @@ public class RegionListener implements Listener {
         if (finalValue != null && !finalValue.equals("null") && !finalValue.equals(oldValue)) {
             player.setResourcePack(finalValue);
             player.setMetadata("regionresourcepack:name", new FixedMetadataValue(this.plugin, finalValue));
-        } else if ((finalValue == null || finalValue.equals("null")) && !oldValue.equals("!server!")) {
-            player.setResourcePack(RegionResourcePacks.serverResourcePackURL);
+        } else if ((finalValue == null || finalValue.equals("null")) && !oldValue.equals("!server!")
+        && !RegionResourcePacks.serverResourcePackURL.isEmpty()) {
+            try {
+                player.setResourcePack(RegionResourcePacks.serverResourcePackURL);
+            } catch (Exception e) {
+                if (!serverResourcePackFail) {
+                    this.plugin.getLogger().warning("Your server resource pack url is invalid: " +
+                            RegionResourcePacks.serverResourcePackURL);
+                    serverResourcePackFail = true;
+                }
+            }
             player.setMetadata("regionresourcepack:name", new FixedMetadataValue(this.plugin, "!server!"));
         }
     }
@@ -70,8 +105,17 @@ public class RegionListener implements Listener {
         if (finalValue != null && !finalValue.equals("null") && !finalValue.equals(oldValue)) {
             player.setResourcePack(finalValue);
             player.setMetadata("regionresourcepack:name", new FixedMetadataValue(this.plugin, finalValue));
-        } else if ((finalValue == null || finalValue.equals("null")) && !oldValue.equals("!server!")) {
-            player.setResourcePack(RegionResourcePacks.serverResourcePackURL);
+        } else if ((finalValue == null || finalValue.equals("null")) && !oldValue.equals("!server!")
+                && !RegionResourcePacks.serverResourcePackURL.isEmpty()) {
+            try {
+                player.setResourcePack(RegionResourcePacks.serverResourcePackURL);
+            } catch (Exception e) {
+                if (!serverResourcePackFail) {
+                    this.plugin.getLogger().warning("Your server resource pack url is invalid: " +
+                            RegionResourcePacks.serverResourcePackURL);
+                    serverResourcePackFail = true;
+                }
+            }
             player.setMetadata("regionresourcepack:name", new FixedMetadataValue(this.plugin, "!server!"));
         }
     }
@@ -102,8 +146,7 @@ public class RegionListener implements Listener {
                     String url = region.getFlag(RegionResourcePacks.flag);
                     if (url != null && !url.equals("null"))
                         finalValue = url;
-                } else
-                    this.plugin.getLogger().warning("__global__ region could not be found.");
+                }
             }
             return finalValue;
         }

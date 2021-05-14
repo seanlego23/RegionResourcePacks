@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.Locale;
 
 public final class RegionResourcePacks extends JavaPlugin {
 
@@ -38,12 +37,12 @@ public final class RegionResourcePacks extends JavaPlugin {
         File serverPropertiesFile = new File(plugin.getServer().getWorldContainer(), "server.properties");
 
         BufferedReader reader;
+        serverResourcePackURL = "";
         try {
             reader = new BufferedReader(new FileReader(serverPropertiesFile));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             plugin.getLogger().warning("Could not read server.properties file.");
-            serverResourcePackURL = "null";
             return;
         }
 
